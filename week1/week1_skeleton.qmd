@@ -1,0 +1,170 @@
+---
+title: "Lab 1"
+subtitle: "Creating tidy tables"
+description: "Friday January 9^th^, 2026"
+format: html
+---
+
+## Activity 1: Creating Tidy Tables 
+
+There are many different ways to create tidy tables in R. You might be familiar with the `kable` function from `{knitr}` that creates tables for rectangular data. Kable tables don't have a ton of flexibility, but are great at producing clean, simple tables. As we move into creating tables for the many different statistical models we will learn in this course, we will need to move beyond a simple kable table. That is where `{gt}` comes in!
+A `{gt}` table allows for the following structure, making it ideal for displaying different statistical outcomes. 
+
+```{r, echo=FALSE}
+knitr::include_graphics(here::here("week1", "images", "gt_table.svg"))
+```
+
+We are going to use our class survey data to create some tables! 
+```{r}
+#| warning: false
+#| message: false
+
+# Load packages
+library(tidyverse)
+library(gtsummary)
+library(gt)
+library(janitor)
+
+
+
+# Read in class survey data and split into two random groups
+class_data <- read_csv("https://raw.github.com/garberadamc/W26-Policy-Eval/main/course-materials/labs/data/W26_class_survey.csv") 
+
+```
+
+
+Let's create a base table that we will use with both `kable` and `gt`. 
+
+
+```{r}
+
+
+```
+
+
+
+Now lets output our `balance_summary` with a kable table! 
+
+```{r}
+
+```
+
+It looks fine... But we can make it a lot nicer with `{gt}`! 
+
+```{r}
+# Convert our balance summary table to a gt table
+
+  
+  # Add a Title and Subtitle
+ 
+  
+  # Add a Spanner to group the data columns
+
+  
+  # Change column labels
+
+  
+  # Add a source note at the bottom
+
+```
+
+The `{gt}` table looks a lot cleaner! Let's move on with creating some more `{gt}` tables! 
+
+We are going to use data from the [Moland et al. 2013](https://drive.google.com/file/d/1TjKa7gH9YVCSpG4HeWb7LFFbsqoSEYeQ/view) study on Lobster MPAS. 
+
+The data we will be working with has the following variables: 
+
+| Variable | Data Type | Descriptions |
+|----------|-----------|--------------|
+| year | Numeric (5-levels) | Years measured from 2006 to 2010 |
+| region | Character (3-levels) | bol= Bolærne , kve = Kvernskjær , flo = Flødevigen |
+| treat | Character (2-levels) | mpa = treatment , con = control |
+| cpue | Numeric | Catch per unit effort |
+
+Let's read in our data to get started! 
+
+```{r}
+#| warning: false
+#| message: false
+lobsters <- read_csv("https://raw.github.com/garberadamc/Lab2-EDS241-Moland13/main/data/moland13_lobsters.csv")
+```
+
+We will start with creating a table for the total CPUE for each year and region. 
+
+To create a table with a column for each region, we need to untidy our data! We will do so by pivoting our data into wide format, with a column for each region, and the CPU for each year in that specific region. 
+
+This will be a 2 way table, since we are displaying data for two variables.
+
+
+```{r}
+
+```
+
+Time to use `{gt}` to make this into a nice looking table!!
+
+```{r}
+
+  cols_label(
+    bol = "Bolærne",
+    flo = "Kvernskjær",
+    kve = "Flødevigen") %>%
+
+```
+
+Let's now add our `treat` variable into the table, so we can see how lobster catch varied within our control and MPA groups. This will be a 3 way table! 
+
+```{r}
+
+```
+
+Time to use `{gt}` to make this into a nice looking table!!
+
+```{r}
+
+  tab_spanner(
+    label = "Bolærne",
+    columns = c("bol_con", "bol_mpa")
+  ) %>%
+  tab_spanner(
+    label = "Flødevigen",
+    columns = c("flo_con", "flo_mpa")
+  ) %>%
+  tab_spanner(
+    label = "Kvernskjær",
+    columns = c("kve_con", "kve_mpa")
+  ) 
+
+```
+
+#### Time to get REALLY fancy! 
+
+We can add plots within our table as well! While maybe not completely necessary in this instance, it can be a helpful tool to have! 
+
+```{r}
+
+```
+
+
+```{r}
+#install.packages("praise")
+#install.packages("cowsay")
+#install.packages("beepr")
+library(praise)
+library(cowsay)
+library(beepr)
+say("All done making some beautiful tables! :) ", "whale"); beep(3)  
+
+```
+
+
+
+
+## Activity 2: Buntaine Policy Study Reading Comprehension Check 
+
+With your group, answer the following questions from the Buntaine article. 
+
+1. What prompted this study? 
+2. How were the treatment and control groups formed? 
+3. Was the social competition strategy effective? 
+
+
