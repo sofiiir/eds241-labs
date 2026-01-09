@@ -28,7 +28,8 @@ library(janitor)
 
 
 # Read in class survey data and split into two random groups
-class_data <- read_csv("https://raw.github.com/garberadamc/W26-Policy-Eval/main/course-materials/labs/data/W26_class_survey.csv") 
+class_data <- read_csv("https://raw.github.com/garberadamc/W26-Policy-Eval/main/course-materials/labs/data/W26_class_survey.csv") |> 
+  mutate(random_groups = sample(rep(c("control", "treatment"), each = n()/2)))
 
 ```
 
@@ -37,7 +38,22 @@ Let's create a base table that we will use with both `kable` and `gt`.
 
 
 ```{r}
+# create the base summary object
+balance_summary <- class_data |> 
+  gtsummary::tbl_summary(
+    # select how we want to group columns
+    by = random_groups,
+    
+    # variables to include
+    include = c(height, pets, dominant_hand, fav_number),
+    
+    # display the mean and standard deviation
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  ) |> 
+  # add p-values
+  add_p()
 
+balance_summary
 
 ```
 
@@ -46,26 +62,42 @@ Let's create a base table that we will use with both `kable` and `gt`.
 Now lets output our `balance_summary` with a kable table! 
 
 ```{r}
-
+balance_summary |> 
+  as_kable_extra(caption = "Class Survey Balance Table") |> 
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed", "hover")
+  )
 ```
 
 It looks fine... But we can make it a lot nicer with `{gt}`! 
 
 ```{r}
 # Convert our balance summary table to a gt table
-
+balance_summary |> 
+  as_gt() |> 
   
   # Add a Title and Subtitle
- 
+ tab_header(
+   title = "Class Survey Balance Table",
+   subtitle = "Using Randomly Assigned Groups"
+ ) |> 
   
   # Add a Spanner to group the data columns
-
+  tab_spanner(
+    label = "Randomize Groups",
+    columns = c(stat_1, stat_2) # extends across these columns
+  ) |> 
   
   # Change column labels
-
+  cols_label(
+    label = "Variable",
+    p.value = "P-Value"
+  ) |> 
   
   # Add a source note at the bottom
-
+  tab_source_note(
+    source_note = "Note: Data from the Winter 2026 Class Survey"
+  )
 ```
 
 The `{gt}` table looks a lot cleaner! Let's move on with creating some more `{gt}` tables! 
@@ -97,42 +129,94 @@ This will be a 2 way table, since we are displaying data for two variables.
 
 
 ```{r}
-
+# untidy format
+tbl_2way <- lobsters |> 
+  
+  # calculate the cpue for each year and region
+  group_by(year, region) |> 
+  summarize(
+    total_cpue = sum(cpue, na.rm = TRUE),
+    .groups = "drop" # same as ungrouping 
+  ) |> 
+  
+  # pivot to create column for each region
+  pivot_wider(
+    names_from = region, 
+    values_from = total_cpue
+  ) |> 
+  arrange(year) |> 
+  
+  # add a row for total cpue 
+  adorn_totals("row")
+  
 ```
 
 Time to use `{gt}` to make this into a nice looking table!!
 
-```{r}
+If your coming frame use `gt` if your coming from a `gt` table use `as_gt()`
 
+```{r}
+tbl_2way |> 
+  gt(rowname_col = "year") |> 
+  tab_header(
+    title = "European Lobster Catch by Region and Year",
+    subtitle = "Total Catch Per Unit Effort (CPUE) by year and region"
+  ) |> 
   cols_label(
     bol = "Bolærne",
     flo = "Kvernskjær",
-    kve = "Flødevigen") %>%
+    kve = "Flødevigen") |> 
+  tab_source_note(
+    "Source: Moland et al., 2013"
+  )
 
 ```
 
 Let's now add our `treat` variable into the table, so we can see how lobster catch varied within our control and MPA groups. This will be a 3 way table! 
 
 ```{r}
-
+tbl_3way <- lobsters |> 
+  # calculate total cpue for each year/region/treatment group
+  group_by(year, region, treat) |> 
+  summarise(total_cpue = sum(cpue, na.rm = TRUE),
+            .groups = "drop") |> 
+  # pivot to create column for each treatment/ control group within each region
+  pivot_wider(names_from = c(region, treat), 
+              values_from = total_cpue) |> 
+  arrange(year)
 ```
 
 Time to use `{gt}` to make this into a nice looking table!!
 
 ```{r}
-
+tbl_3way |> 
+  gt(rowname_col = "year") |> 
+  tab_header(
+    title = "European Lobster Catch by Region, Year and Treatment",
+    subtitle = "Total Catch Per Unit Effort (CPUE) by year, region, and treatment"
+  ) |> 
   tab_spanner(
     label = "Bolærne",
     columns = c("bol_con", "bol_mpa")
-  ) %>%
+  ) |> 
   tab_spanner(
     label = "Flødevigen",
     columns = c("flo_con", "flo_mpa")
-  ) %>%
+  ) |> 
   tab_spanner(
     label = "Kvernskjær",
     columns = c("kve_con", "kve_mpa")
-  ) 
+  ) |> 
+  cols_label(bol_con = "Control",
+    bol_mpa = "MPA",
+    flo_con = "Control",
+    flo_mpa = "MPA",
+    kve_con = "Control",
+    kve_mpa = "MPA") |> 
+  tab_source_note(
+    "Source: Moland et al., 2013"
+  )
+
 
 ```
 
@@ -141,7 +225,33 @@ Time to use `{gt}` to make this into a nice looking table!!
 We can add plots within our table as well! While maybe not completely necessary in this instance, it can be a helpful tool to have! 
 
 ```{r}
+table_w_plots <- lobsters |> 
+  # calculate total cpue for each year
+  group_by(year) |> 
+  summarize(
+    total_cpue = sum(cpue, na.rm = TRUE),
+    dist_cpue = list(cpue), # store all individual cpue values as a list for each year
+    .groups = "drop"
+  ) |> 
+  arrange(year) |> 
+  # creaete gt table 
+  gt() |> 
+  tab_header(title = "Eurpean Lobster Catch Totals and Distribution (2006 - 2007)",
+             subtitle = "Total Catch per unity Effort (CPUE)") |> 
+  cols_label(
+    year = "Year",
+    total_cpue = "Total CPUE",
+    dist_cpue = "Density CPUE"
+  ) |> 
+# add in line 
+  gtExtras::gt_plt_dist(
+    dist_cpue,
+    type = "density",
+    line_color = "blue",
+    fill_color = "red"
+  )
 
+table_w_plots
 ```
 
 
@@ -152,7 +262,7 @@ We can add plots within our table as well! While maybe not completely necessary 
 library(praise)
 library(cowsay)
 library(beepr)
-say("All done making some beautiful tables! :) ", "whale"); beep(3)  
+say("All done making some beautiful tables! :) ", "endlesshorse"); beep(2)  
 
 ```
 
@@ -164,7 +274,10 @@ say("All done making some beautiful tables! :) ", "whale"); beep(3)
 With your group, answer the following questions from the Buntaine article. 
 
 1. What prompted this study? 
+Make 
 2. How were the treatment and control groups formed? 
+
 3. Was the social competition strategy effective? 
 
+4. What was the primary metric for assessing the impact of the social competition?
 
