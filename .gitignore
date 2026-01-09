@@ -6,6 +6,12 @@
 .RData
 .RDataTmp
 
+# DS.Store
+.DS_Store
+
+# data
+/week*/data
+
 # User-specific files
 .Ruserdata
 
