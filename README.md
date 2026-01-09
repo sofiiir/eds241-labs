@@ -1,1 +1,1 @@
-# eds241-labs
+# EDS 241:Labs
