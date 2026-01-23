@@ -297,7 +297,7 @@ Does our 2020 data tell the whole story? What if the drop we were experiencing i
 
 1. Before the lockdown, we see week-to-week fluctuations in NO2 in New Mexico and Texas. Do you think that Texas make a compelling counterfactual which satisfies the main causal identification assumption for DiD?
 
-**Yes, the fluctuations are there but they fluctuate together. The parallel trends assumption is met so Texas makes a good counterfactual for DiD.**
+**Yes, the fluctuations are there but they fluctuate together. The parallel trends assumption is met so Texas makes a good counterfactual for DiD. This creates an apples to apples comparison.**
 
 2. Look at your summary(tx_nm_did) output. Which specific coefficient represents the "Treatment Effect" (the actual impact of the lockdown)?  Is this coefficient statistically significant at the 5% level ($p < 0.05$)? Explain what that $p$-value tells us about the relationship between the lockdown and $NO_2$.
 
