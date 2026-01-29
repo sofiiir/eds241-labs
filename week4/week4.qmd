@@ -349,6 +349,8 @@ fe_lm <- lm(perinc ~ vpd + I(vpd^2) + dbh + density + plot + year,
 summ(fe_lm, model.fit = FALSE, digits = 3)
 ```
 
+The increase in vpd between the two models shows that plots were convoluting the true effects of vapor pressure deficit on the percent increase in rust disease. The effect of VPD is larger than was originally calculated without taking into account differences in plots and year.
+
 ### ✅ Your turn
 
 **Q9.** Compare the coefficient on `vpd` in the `no-FE model` vs the `FE model`. Did the estimate get larger, smaller, or change sign? What does that suggest about confounding from unobserved plot differences?
