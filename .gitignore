@@ -12,6 +12,9 @@
 # data
 /week*/data
 
+# week6 has an API DONT PUSH
+/week6
+
 # User-specific files
 .Ruserdata
 
